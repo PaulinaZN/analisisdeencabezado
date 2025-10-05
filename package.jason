@@ -1,1 +1,15 @@
-
+{
+  "name": "request-header-parser-microservice",
+  "version": "1.0.0",
+  "description": "FreeCodeCamp Request Header Parser Microservice",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "keywords": ["freecodecamp", "header", "parser", "api"],
+  "author": "PaulinaZN",
+  "license": "MIT"
+}
