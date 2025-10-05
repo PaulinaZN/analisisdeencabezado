@@ -1,47 +1,64 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
+app.use(cors());
 app.use(express.json());
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
+app.use(express.urlencoded({ extended: true }));
 
-// Función para obtener la IP real (considerando proxies)
+// Función para obtener IP del cliente
 const getClientIp = (req) => {
-  return req.headers['x-forwarded-for'] || 
-         req.connection.remoteAddress || 
-         req.socket.remoteAddress ||
-         (req.connection.socket ? req.connection.socket.remoteAddress : null);
+  const forwarded = req.headers['x-forwarded-for'];
+  const ip = forwarded 
+    ? forwarded.split(',')[0] 
+    : req.connection.remoteAddress || 
+      req.socket.remoteAddress || 
+      req.connection.socket.remoteAddress;
+  
+  // Limpiar la IP (remover ::ffff: si está presente)
+  return ip ? ip.replace(/^::ffff:/, '') : 'Unknown';
 };
 
-// Endpoint principal
+// Endpoint principal - EXACTAMENTE como lo pide FreeCodeCamp
 app.get('/api/whoami', (req, res) => {
-  const result = {
+  const response = {
     ipaddress: getClientIp(req),
-    language: req.headers['accept-language'],
-    software: req.headers['user-agent']
+    language: req.headers['accept-language'] || 'Unknown',
+    software: req.headers['user-agent'] || 'Unknown'
   };
   
-  res.json(result);
+  res.json(response);
 });
 
-// Ruta raíz con instrucciones
+// Ruta raíz con información
 app.get('/', (req, res) => {
   res.json({
     message: 'Request Header Parser Microservice',
-    usage: 'Visit /api/whoami to see your request headers',
-    example: {
-      ipaddress: '192.168.1.1',
-      language: 'en-US,en;q=0.9',
-      software: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36...'
+    endpoint: 'GET /api/whoami',
+    returns: {
+      ipaddress: 'Your IP address',
+      language: 'Your preferred language', 
+      software: 'Your software/browser info'
+    },
+    example: 'https://your-app.onrender.com/api/whoami'
+  });
+});
+
+// Manejo de errores 404
+app.use('*', (req, res) => {
+  res.status(404).json({
+    error: 'Route not found',
+    available_routes: {
+      'GET /': 'Project information',
+      'GET /api/whoami': 'Get request header information'
     }
   });
 });
 
+// Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Request Header Parser Microservice running on port ${PORT}`);
+  console.log(`Visit: http://localhost:${PORT}/api/whoami`);
 });
