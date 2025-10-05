@@ -1,1 +1,10 @@
-//
+# Request Header Parser Microservice
+
+FreeCodeCamp Back End Development and APIs Project
+
+## Usage
+
+Visit `/api/whoami` to get your request header information:
+
+```bash
+GET /api/whoami
